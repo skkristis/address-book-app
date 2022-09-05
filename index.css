@@ -2,4 +2,74 @@ body {
   margin: 0;
   padding: 0;
   background: darkolivegreen;
+  font-family: monospace;
+}
+#form-container {
+  background: lightsteelblue;
+  width: 50vw;
+  margin: 15px auto;
+  padding: 15px;
+  border: 1px solid black;
+}
+#search-container {
+  background: lightsteelblue;
+  width: 50vw;
+  margin: 15px auto;
+  padding: 15px;
+  border: 1px solid black;
+  text-align: right;
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 20px;
+}
+form {
+  text-align: right;
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 20px;
+}
+label {
+  font-size: 18px;
+}
+input {
+  font-size: 16px;
+  line-height: 18px;
+}
+input[type="checkbox"] {
+  justify-self: start;
+  width: 18px;
+  height: 18px;
+}
+.btn {
+  font-size: 18px;
+}
+#output-container {
+  height: 100vw;
+  background: rgba(100, 148, 237, 0.445);
+}
+#output-container > * {
+  display: grid;
+  grid-template-columns: min-content repeat(6, 1fr);
+  gap: 10px;
+  margin: 10px;
+}
+.detail-header > * {
+  background: cornsilk;
+  font-size: 24px;
+  text-align: center;
+  border: 1px solid black;
+}
+.address > * {
+  font-size: 20px;
+  text-align: center;
+  background: rgba(255, 248, 220, 0.425);
+}
+.stock {
+  background: none;
+  border: none;
+}
+@media (max-width: 768px) {
+  body {
+    background: wheat;
+  }
 }
