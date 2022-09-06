@@ -1,6 +1,6 @@
 let addressBook = [];
 
-const render = () => {
+const render = (addressArray) => {
   function createBlock(info, type = "div") {
     const container = document.createElement(type);
     container.innerText = info;
@@ -27,7 +27,7 @@ const render = () => {
 
   const output = document.querySelector("#output-container");
 
-  addressBook.forEach((obj) => {
+  addressArray.forEach((obj) => {
     const container = document.createElement("div");
     const checkbox = document.createElement("input");
 
@@ -40,7 +40,7 @@ const render = () => {
     for (let prop in obj) {
       const info = obj[prop];
       if (prop === "fav") {
-        obj[prop] !== false ? container.appendChild(createBlock("☆", "button")) : container.appendChild(createBlock("", "button"));
+        container.appendChild(createBlock(obj[prop] ? "☆" : "", "button"));
       } else {
         container.appendChild(createBlock(info));
       }
@@ -69,7 +69,7 @@ document.querySelector("#address-form").addEventListener("submit", (e) => {
     document.querySelector("#address-form").reset();
 
     localStorage.setItem("addressBook", JSON.stringify(addressBook));
-    render();
+    render(addressBook);
   }
 });
 
@@ -101,6 +101,24 @@ document.querySelector("#output").addEventListener("click", (e) => {
 (function () {
   if (localStorage.addressBook) {
     addressBook = JSON.parse(localStorage.addressBook);
-    render();
+    render(addressBook);
   }
 })();
+
+document.querySelector("#search-bar").addEventListener("keyup", (e) => {
+  const renderArr = addressBook.filter((x) => {
+    for (let key in x) {
+      if (key !== "fav") {
+        let snippet = x[key].slice(0, e.target.value.length);
+        // console.log(snippet);
+        // console.log(e.target.value);
+        if (snippet == e.target.value) {
+          return true;
+        }
+      } else if (key == "fav" && e.target.value == "favorites") {
+        return x[key];
+      }
+    }
+  });
+  render(renderArr);
+});
