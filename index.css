@@ -43,11 +43,18 @@ input[type="checkbox"] {
 .btn {
   font-size: 18px;
 }
-#output-container {
+
+#output {
   height: 100vw;
   background: rgba(100, 148, 237, 0.445);
 }
 #output-container > * {
+  display: grid;
+  grid-template-columns: min-content repeat(6, 1fr);
+  gap: 10px;
+  margin: 10px;
+}
+.detail-header {
   display: grid;
   grid-template-columns: min-content repeat(6, 1fr);
   gap: 10px;
@@ -64,12 +71,8 @@ input[type="checkbox"] {
   text-align: center;
   background: rgba(255, 248, 220, 0.425);
 }
-.stock {
-  background: none;
+.address > button {
+  outline: none;
   border: none;
-}
-@media (max-width: 768px) {
-  body {
-    background: wheat;
-  }
+  cursor: pointer;
 }

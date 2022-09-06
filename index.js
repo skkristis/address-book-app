@@ -1,62 +1,52 @@
-const addressBook = [
-  {
-    name: "ALvin",
-    "phone number": "21389123",
-    address: "somewhere",
-    email: "alvin@gmail.com",
-    fav: "on",
-  },
-  {
-    name: "Garvin",
-    "phone number": "+28913",
-    address: "woods",
-    email: "woods@mail.com",
-    fav: "",
-  },
-  {
-    name: "John Doe",
-    "phone number": "+28935823",
-    address: "Malibu",
-    email: "asopfgn@apfosn.com",
-    fav: "",
-  },
-];
+let addressBook = [];
 
-const clear = () => {
-  const inputs = document.querySelectorAll("#address-form>input");
-  inputs.forEach((x) => (x.value ? (x.value = null) : (x.checked = false)));
-};
 const render = () => {
-  function createDiv(info) {
-    const container = document.createElement("div");
+  function createBlock(info, type = "div") {
+    const container = document.createElement(type);
     container.innerText = info;
     return container;
+  }
+  function handlers() {
+    const container = document.createElement("div");
+    const remove = document.createElement("button");
+    const edit = document.createElement("button");
+    remove.type = "button";
+    edit.type = "button";
+    remove.className = "delete";
+    edit.className = "edit";
+    remove.innerText = "❌";
+    edit.innerText = "🖊️";
+    container.appendChild(edit);
+    container.appendChild(remove);
+
+    return container;
+  }
+  if (document.querySelectorAll(".address")) {
+    document.querySelector("#output-container").innerHTML = null;
   }
 
   const output = document.querySelector("#output-container");
 
   addressBook.forEach((obj) => {
-    // console.log(obj);
     const container = document.createElement("div");
     const checkbox = document.createElement("input");
-    const edit = document.createElement("div");
-    edit.innerHTML = ` <button type="button">🖊️</button>
-    <button type="button">❌</button>`;
+
     container.className = "address";
     checkbox.type = "checkbox";
-    checkbox.id = "selected";
+    checkbox.className = "selected";
     checkbox.name = "selected";
     container.appendChild(checkbox);
+
     for (let prop in obj) {
       const info = obj[prop];
       if (prop === "fav") {
-        obj[prop] ? container.appendChild(createDiv("☆")) : container.appendChild(createDiv(""));
+        obj[prop] !== false ? container.appendChild(createBlock("☆", "button")) : container.appendChild(createBlock("", "button"));
       } else {
-        container.appendChild(createDiv(info));
+        container.appendChild(createBlock(info));
       }
       output.appendChild(container);
     }
-    container.appendChild(edit);
+    container.appendChild(handlers());
   });
 };
 
@@ -65,29 +55,52 @@ document.querySelector("#address-form").addEventListener("submit", (e) => {
 
   const fakeObj = {
     name: null,
-    "phone number": "null",
+    phoneNumber: null,
     address: null,
     email: null,
-    fav: null,
+    fav: false,
   };
 
   const formData = new FormData(e.target);
   let address = Object.fromEntries(formData);
-  if (address.name && address["phone number"]) {
+  if (address.name && address["phoneNumber"]) {
     address = Object.assign({}, fakeObj, address);
-    console.log(address);
     addressBook.push(address);
-    clear();
-    if (document.querySelectorAll(".address")) {
-      console.log(document.querySelectorAll(".address"));
-      document.querySelectorAll(".address").forEach((x) => console.log(x.remove()));
-    }
+    document.querySelector("#address-form").reset();
 
+    localStorage.setItem("addressBook", JSON.stringify(addressBook));
     render();
   }
 });
 
 document.querySelector("#clear").addEventListener("click", (e) => {
-  clear();
+  document.querySelector("#address-form").reset();
 });
-render();
+
+document.querySelector("#output").addEventListener("click", (e) => {
+  if (e.target.id === "selected-handler") {
+    if (e.target.checked) {
+      document.querySelectorAll(".selected").forEach((x) => (x.checked = true));
+    } else {
+      document.querySelectorAll(".selected").forEach((x) => (x.checked = false));
+    }
+  } else if (e.target.className === "delete") {
+    const index = addressBook.findIndex((person) => person.name === e.target.parentNode.parentNode.children[1].innerText && person.phoneNumber === e.target.parentNode.parentNode.children[2].innerText);
+    addressBook.splice(index, 1);
+    e.target.parentNode.parentNode.remove();
+    localStorage.setItem("addressBook", JSON.stringify(addressBook));
+  } else if (e.target.className === "edit") {
+  } else if (e.target.tagName === "BUTTON") {
+    const index = addressBook.findIndex((person) => person.name === e.target.parentNode.children[1].innerText && person.phoneNumber === e.target.parentNode.children[2].innerText);
+    addressBook[index].fav === "on" ? (addressBook[index].fav = false) : (addressBook[index].fav = "on");
+    e.target.innerText === "" ? (e.target.innerText = "☆") : (e.target.innerText = "");
+    localStorage.setItem("addressBook", JSON.stringify(addressBook));
+  }
+});
+
+(function () {
+  if (localStorage.addressBook) {
+    addressBook = JSON.parse(localStorage.addressBook);
+    render();
+  }
+})();
