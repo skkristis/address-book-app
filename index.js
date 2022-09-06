@@ -1,21 +1,27 @@
 let addressBook = [];
 
 const render = (addressArray) => {
-  function createBlock(info, type = "div") {
+  function createBlock(info, type = "div", name, number) {
     const container = document.createElement(type);
+    const customId = name + number;
     container.innerText = info;
+    container.name = customId;
     return container;
   }
-  function handlers() {
+  function handlers(obj, name, number) {
     const container = document.createElement("div");
     const remove = document.createElement("button");
     const edit = document.createElement("button");
+    const customId = name + number;
     remove.type = "button";
     edit.type = "button";
     remove.className = "delete";
     edit.className = "edit";
     remove.innerText = "❌";
     edit.innerText = "🖊️";
+    remove.name = customId;
+    edit.name = customId;
+    obj.customId = customId;
     container.appendChild(edit);
     container.appendChild(remove);
 
@@ -40,13 +46,13 @@ const render = (addressArray) => {
     for (let prop in obj) {
       const info = obj[prop];
       if (prop === "fav") {
-        container.appendChild(createBlock(obj[prop] ? "☆" : "", "button"));
-      } else {
+        container.appendChild(createBlock(obj[prop] ? "☆" : "", "button", obj.name, obj.phoneNumber));
+      } else if (prop !== "customId") {
         container.appendChild(createBlock(info));
       }
       output.appendChild(container);
     }
-    container.appendChild(handlers());
+    container.appendChild(handlers(obj, obj.name, obj.phoneNumber));
   });
 };
 
@@ -85,34 +91,25 @@ document.querySelector("#output").addEventListener("click", (e) => {
       document.querySelectorAll(".selected").forEach((x) => (x.checked = false));
     }
   } else if (e.target.className === "delete") {
-    const index = addressBook.findIndex((person) => person.name === e.target.parentNode.parentNode.children[1].innerText && person.phoneNumber === e.target.parentNode.parentNode.children[2].innerText);
+    const index = addressBook.findIndex((person) => person.customId === e.target.name);
     addressBook.splice(index, 1);
     e.target.parentNode.parentNode.remove();
     localStorage.setItem("addressBook", JSON.stringify(addressBook));
   } else if (e.target.className === "edit") {
+    console.log(e.target.name);
   } else if (e.target.tagName === "BUTTON") {
-    const index = addressBook.findIndex((person) => person.name === e.target.parentNode.children[1].innerText && person.phoneNumber === e.target.parentNode.children[2].innerText);
+    const index = addressBook.findIndex((person) => person.customId === e.target.name);
     addressBook[index].fav === "on" ? (addressBook[index].fav = false) : (addressBook[index].fav = "on");
     e.target.innerText === "" ? (e.target.innerText = "☆") : (e.target.innerText = "");
     localStorage.setItem("addressBook", JSON.stringify(addressBook));
   }
 });
 
-(function () {
-  if (localStorage.addressBook) {
-    addressBook = JSON.parse(localStorage.addressBook);
-    render(addressBook);
-  }
-})();
-
 document.querySelector("#search-bar").addEventListener("keyup", (e) => {
   const renderArr = addressBook.filter((x) => {
     for (let key in x) {
       if (key !== "fav") {
-        let snippet = x[key].slice(0, e.target.value.length);
-        // console.log(snippet);
-        // console.log(e.target.value);
-        if (snippet == e.target.value) {
+        if (x[key].includes(e.target.value)) {
           return true;
         }
       } else if (key == "fav" && e.target.value == "favorites") {
@@ -122,3 +119,10 @@ document.querySelector("#search-bar").addEventListener("keyup", (e) => {
   });
   render(renderArr);
 });
+
+(function () {
+  if (localStorage.addressBook) {
+    addressBook = JSON.parse(localStorage.addressBook);
+    render(addressBook);
+  }
+})();
