@@ -44,19 +44,18 @@ input[type="checkbox"] {
   font-size: 18px;
 }
 
-#output {
-  height: 100vw;
+/* #output {
   background: rgba(100, 148, 237, 0.445);
-}
+} */
 #output-container > * {
   display: grid;
-  grid-template-columns: min-content repeat(6, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 10px;
   margin: 10px;
 }
 .detail-header {
   display: grid;
-  grid-template-columns: min-content repeat(6, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 10px;
   margin: 10px;
 }
@@ -74,14 +73,22 @@ input[type="checkbox"] {
 .address > button {
   outline: none;
   border: none;
-  cursor: pointer;
 }
 .search-options {
   grid-column: 1/3;
-  text-align: center;
+  display: flex;
+  flex: 1;
+  justify-content: space-around;
 }
 .selectedHandlers {
   width: 100%;
   text-align: center;
   font-size: 24px;
+}
+button {
+  cursor: pointer;
+}
+.sort-container {
+  display: flex;
+  gap: 5px;
 }

@@ -53,6 +53,16 @@ document.querySelector("#search-bar").addEventListener("keyup", (e) => {
 
   render(renderArr);
 });
+document.querySelector(".search-options").addEventListener("click", (e) => {
+  console.log(e.target.id);
+  if (e.target.id === "sortAZ") {
+    addressBook.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (e.target.id === "sortZA") {
+    addressBook.sort((a, b) => b.name.localeCompare(a.name));
+  }
+  console.log(addressBook);
+  render(addressBook);
+});
 
 document.querySelector("#output").addEventListener("click", (e) => {
   function selectedHandlers(remove, edit) {
@@ -74,15 +84,7 @@ document.querySelector("#output").addEventListener("click", (e) => {
     }
   }
 
-  if (e.target.id === "selected-handler") {
-    if (e.target.checked) {
-      document.querySelectorAll(".selected").forEach((x) => (x.checked = true));
-      selectedHandlers(false, true);
-    } else {
-      document.querySelectorAll(".selected").forEach((x) => (x.checked = false));
-      document.querySelector(".selectedHandlers").remove();
-    }
-  } else if (e.target.className === "delete") {
+  if (e.target.className === "delete") {
     [customIdName, customIdPhone] = e.target.name.split(",");
 
     const index = addressBook.findIndex((person) => person.name === customIdName && person.phoneNumber === customIdPhone);
@@ -96,19 +98,24 @@ document.querySelector("#output").addEventListener("click", (e) => {
     const index = addressBook.findIndex((person) => person.name === customIdName && person.phoneNumber === customIdPhone);
     document.querySelectorAll("[type]").forEach((x) => (x.disabled = true));
     render([addressBook[index]], true);
+    document.querySelectorAll("button").forEach((x) => (x.disabled = true));
 
     selectedHandlers(false, true);
 
     document.querySelector(".selectedHandlers").addEventListener("click", () => {
       const newObj = {
-        name: document.querySelector(".address").children[1].value,
-        phoneNumber: document.querySelector(".address").children[2].value,
-        address: document.querySelector(".address").children[3].value,
-        email: document.querySelector(".address").children[4].value,
-        fav: document.querySelector(".address").children[5].value,
+        name: document.querySelector(".address").children[0].value,
+        phoneNumber: document.querySelector(".address").children[1].value,
+        address: document.querySelector(".address").children[2].value,
+        email: document.querySelector(".address").children[3].value,
+        fav: addressBook[index].fav,
       };
 
+      console.log(newObj);
       addressBook.splice(index, 1, newObj);
+      document.querySelector(".selectedHandlers").remove();
+      document.querySelectorAll("[type]").forEach((x) => (x.disabled = false));
+
       render(addressBook);
       localStorage.setItem("addressBook", JSON.stringify(addressBook));
     });
@@ -164,15 +171,9 @@ const render = (addressArray, edit) => {
 
   addressArray.forEach((obj) => {
     const container = document.createElement("div");
-    const checkbox = document.createElement("input");
     const customId = `${obj.name},${obj.phoneNumber}`;
 
     container.className = "address";
-    checkbox.type = "checkbox";
-    checkbox.className = "selected";
-    checkbox.name = "selected";
-
-    container.appendChild(checkbox);
 
     for (let prop in obj) {
       const info = obj[prop];
