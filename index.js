@@ -8,6 +8,7 @@ document.querySelector("#address-form").addEventListener("click", (e) => {
   document.querySelector("#address-form").addEventListener("submit", (e) => {
     e.preventDefault();
 
+    // stucture object
     const fakeObj = {
       name: null,
       phoneNumber: null,
@@ -18,6 +19,7 @@ document.querySelector("#address-form").addEventListener("click", (e) => {
 
     const formData = new FormData(e.target);
     let address = Object.fromEntries(formData);
+
     if (address.name && address["phoneNumber"]) {
       address = Object.assign({}, fakeObj, address);
       addressBook.push(address);
@@ -31,17 +33,24 @@ document.querySelector("#address-form").addEventListener("click", (e) => {
 
 document.querySelector("#search-bar").addEventListener("keyup", (e) => {
   const renderArr = addressBook.filter((x) => {
+    //loops through all info tabs until finds
+
     for (let key in x) {
       if (key !== "fav") {
         if (x[key].includes(e.target.value)) {
           return true;
         }
       } else if (key == "fav" && e.target.value == "favorites") {
+        // checks if fav is true
         return x[key];
       }
     }
+
+    //default if wasn't found in ANY tab
+
     return false;
   });
+
   render(renderArr);
 });
 
@@ -50,8 +59,8 @@ document.querySelector("#output").addEventListener("click", (e) => {
     if (document.querySelector(".selectedHandlers")) {
       document.querySelector(".selectedHandlers").remove();
     }
+    const item = document.createElement("button");
     if (remove) {
-      const item = document.createElement("button");
       item.type = "button";
       item.innerText = "Delete selected";
       item.className = "selectedHandlers";
@@ -74,75 +83,110 @@ document.querySelector("#output").addEventListener("click", (e) => {
       document.querySelector(".selectedHandlers").remove();
     }
   } else if (e.target.className === "delete") {
-    const index = addressBook.findIndex((person) => person.customId === e.target.name);
+    [customIdName, customIdPhone] = e.target.name.split(",");
+
+    const index = addressBook.findIndex((person) => person.name === customIdName && person.phoneNumber === customIdPhone);
     addressBook.splice(index, 1);
-    e.target.parentNode.parentNode.remove();
+
+    render(addressBook);
     localStorage.setItem("addressBook", JSON.stringify(addressBook));
   } else if (e.target.className === "edit") {
-    render(addressBook, true);
+    [customIdName, customIdPhone] = e.target.name.split(",");
+
+    const index = addressBook.findIndex((person) => person.name === customIdName && person.phoneNumber === customIdPhone);
+    document.querySelectorAll("[type]").forEach((x) => (x.disabled = true));
+    render([addressBook[index]], true);
+
     selectedHandlers(false, true);
-    document.querySelector("#output").prepend();
+
+    document.querySelector(".selectedHandlers").addEventListener("click", () => {
+      const newObj = {
+        name: document.querySelector(".address").children[1].value,
+        phoneNumber: document.querySelector(".address").children[2].value,
+        address: document.querySelector(".address").children[3].value,
+        email: document.querySelector(".address").children[4].value,
+        fav: document.querySelector(".address").children[5].value,
+      };
+
+      addressBook.splice(index, 1, newObj);
+      render(addressBook);
+      localStorage.setItem("addressBook", JSON.stringify(addressBook));
+    });
   } else if (e.target.tagName === "BUTTON" && e.target.name) {
-    const index = addressBook.findIndex((person) => person.customId === e.target.name);
-    addressBook[index].fav === "on" ? (addressBook[index].fav = false) : (addressBook[index].fav = "on");
-    e.target.innerText === "" ? (e.target.innerText = "☆") : (e.target.innerText = "");
+    [customIdName, customIdPhone] = e.target.name.split(",");
+
+    const index = addressBook.findIndex((person) => person.name === customIdName && person.phoneNumber === customIdPhone);
+    if (addressBook[index].fav === "on") {
+      addressBook[index].fav = false;
+      e.target.innerText = " ";
+    } else {
+      addressBook[index].fav = "on";
+      e.target.innerText = "☆";
+    }
+
     localStorage.setItem("addressBook", JSON.stringify(addressBook));
   }
 });
 
 const render = (addressArray, edit) => {
-  function createBlock(info, type = "div", customId) {
+  const output = document.querySelector("#output-container");
+
+  if (document.querySelectorAll(".address")) {
+    document.querySelector("#output-container").innerHTML = null;
+  }
+
+  function createBlock(info, type = "div", name = "") {
     const container = document.createElement(type);
     type === "input" ? (container.value = info) && (container.type = "text") : (container.innerText = info);
-    container.name = customId;
+    container.name = name;
     return container;
   }
-  function handlers(obj, customId) {
+
+  function handlers(name) {
     const container = document.createElement("div");
     const remove = document.createElement("button");
     const edit = document.createElement("button");
+
     remove.type = "button";
     edit.type = "button";
     remove.className = "delete";
     edit.className = "edit";
     remove.innerText = "❌";
     edit.innerText = "🖊️";
-    remove.name = customId;
-    edit.name = customId;
-    obj.customId = customId;
+    remove.name = name;
+    edit.name = name;
+
     container.appendChild(edit);
     container.appendChild(remove);
 
     return container;
   }
 
-  if (document.querySelectorAll(".address")) {
-    document.querySelector("#output-container").innerHTML = null;
-  }
-
-  const output = document.querySelector("#output-container");
-
   addressArray.forEach((obj) => {
     const container = document.createElement("div");
     const checkbox = document.createElement("input");
-    const customId = obj.name + obj.phoneNumber;
+    const customId = `${obj.name},${obj.phoneNumber}`;
 
     container.className = "address";
     checkbox.type = "checkbox";
     checkbox.className = "selected";
     checkbox.name = "selected";
+
     container.appendChild(checkbox);
 
     for (let prop in obj) {
       const info = obj[prop];
+
       if (prop === "fav") {
         container.appendChild(createBlock(obj[prop] ? "☆" : "", "button", customId));
-      } else if (prop !== "customId") {
-        container.appendChild(createBlock(info, edit ? "input" : null));
+      } else {
+        container.appendChild(createBlock(info, edit ? "input" : "div"));
       }
+
       output.appendChild(container);
     }
-    container.appendChild(handlers(obj, customId));
+
+    container.appendChild(handlers(customId));
   });
 };
 
