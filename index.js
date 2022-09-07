@@ -41,7 +41,7 @@ document.querySelector("#search-bar").addEventListener("keyup", (e) => {
           return true;
         }
       } else if (key == "fav" && e.target.value == "favorites") {
-        // checks if fav is true
+        // checks if fav has value
         return x[key];
       }
     }
@@ -54,13 +54,11 @@ document.querySelector("#search-bar").addEventListener("keyup", (e) => {
   render(renderArr);
 });
 document.querySelector(".search-options").addEventListener("click", (e) => {
-  console.log(e.target.id);
   if (e.target.id === "sortAZ") {
     addressBook.sort((a, b) => a.name.localeCompare(b.name));
   } else if (e.target.id === "sortZA") {
     addressBook.sort((a, b) => b.name.localeCompare(a.name));
   }
-  console.log(addressBook);
   render(addressBook);
 });
 
@@ -69,17 +67,22 @@ document.querySelector("#output").addEventListener("click", (e) => {
     if (document.querySelector(".selectedHandlers")) {
       document.querySelector(".selectedHandlers").remove();
     }
+
     const item = document.createElement("button");
+
     if (remove) {
       item.type = "button";
       item.innerText = "Delete selected";
       item.className = "selectedHandlers";
+
       document.querySelector("#output").prepend(item);
     } else if (edit) {
       const item = document.createElement("button");
+
       item.type = "button";
       item.innerText = "Save edit";
       item.className = "selectedHandlers";
+
       document.querySelector("#output").prepend(item);
     }
   }
@@ -97,9 +100,9 @@ document.querySelector("#output").addEventListener("click", (e) => {
 
     const index = addressBook.findIndex((person) => person.name === customIdName && person.phoneNumber === customIdPhone);
     document.querySelectorAll("[type]").forEach((x) => (x.disabled = true));
+
     render([addressBook[index]], true);
     document.querySelectorAll("button").forEach((x) => (x.disabled = true));
-
     selectedHandlers(false, true);
 
     document.querySelector(".selectedHandlers").addEventListener("click", () => {
@@ -111,7 +114,6 @@ document.querySelector("#output").addEventListener("click", (e) => {
         fav: addressBook[index].fav,
       };
 
-      console.log(newObj);
       addressBook.splice(index, 1, newObj);
       document.querySelector(".selectedHandlers").remove();
       document.querySelectorAll("[type]").forEach((x) => (x.disabled = false));
@@ -123,6 +125,7 @@ document.querySelector("#output").addEventListener("click", (e) => {
     [customIdName, customIdPhone] = e.target.name.split(",");
 
     const index = addressBook.findIndex((person) => person.name === customIdName && person.phoneNumber === customIdPhone);
+
     if (addressBook[index].fav === "on") {
       addressBook[index].fav = false;
       e.target.innerText = " ";
@@ -142,14 +145,14 @@ const render = (addressArray, edit) => {
     document.querySelector("#output-container").innerHTML = null;
   }
 
-  function createBlock(info, type = "div", name = "") {
+  function createBlock(info, type = "div", customId = "") {
     const container = document.createElement(type);
     type === "input" ? (container.value = info) && (container.type = "text") : (container.innerText = info);
-    container.name = name;
+    container.name = customId;
     return container;
   }
 
-  function handlers(name) {
+  function handlers(customId) {
     const container = document.createElement("div");
     const remove = document.createElement("button");
     const edit = document.createElement("button");
@@ -160,8 +163,8 @@ const render = (addressArray, edit) => {
     edit.className = "edit";
     remove.innerText = "❌";
     edit.innerText = "🖊️";
-    remove.name = name;
-    edit.name = name;
+    remove.name = customId;
+    edit.name = customId;
 
     container.appendChild(edit);
     container.appendChild(remove);
