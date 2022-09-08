@@ -169,3 +169,10 @@ button:hover {
   right: 60px;
   display: none;
 }
+a {
+  line-height: 25px;
+  background: #c4c4c4;
+  border-radius: 5px;
+  text-indent: 8px;
+  text-decoration: none;
+}

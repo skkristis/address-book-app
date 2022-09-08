@@ -1,5 +1,6 @@
 let addressBook = [];
 let selectedArrIndexes = [];
+let addressArr = [];
 
 function render(addressArray = addressBook) {
   addressArray.sort((a, b) => a.name.localeCompare(b.name));
@@ -53,7 +54,7 @@ function render(addressArray = addressBook) {
   localStorage.setItem("addressBook", JSON.stringify(addressBook));
   const output = document.querySelector("#output-container");
 
-  if (document.querySelectorAll(".address")) {
+  if (addressArr) {
     document.querySelector("#output-container").innerHTML = null;
   }
 
@@ -88,6 +89,9 @@ function render(addressArray = addressBook) {
 })();
 
 document.addEventListener("click", (e) => {
+  addressArr = Array.from(document.querySelectorAll(".address"));
+  let dropDownMenues = document.querySelectorAll(".menu-drop-down");
+
   function menuDropDown() {
     const container = document.createElement("div");
     const menuComp = ["Edit", "Select", "Delete"];
@@ -108,15 +112,13 @@ document.addEventListener("click", (e) => {
   }
 
   function findIndex(target, index) {
-    const arr = Array.from(document.querySelectorAll(".address"));
-
     if (target.className === "address") {
-      index = arr.indexOf(target);
+      index = addressArr.indexOf(target);
     } else {
       while (target.className !== "address") {
         target = target.parentNode;
       }
-      index = arr.indexOf(target);
+      index = addressArr.indexOf(target);
     }
 
     return index;
@@ -231,6 +233,34 @@ document.addEventListener("click", (e) => {
       document.querySelector(".clicked-container").remove();
       document.querySelector("body").classList.toggle("darken");
       break;
+    case "innerContainer":
+      const targetObj = addressBook[findIndex(e.target)];
+
+      const createItem = (name, type) => {
+        const a = document.createElement("a");
+
+        a.href = type !== undefined && targetObj[name] !== "" ? `${type}:  ${targetObj[name]}` : "#";
+        a.innerText = targetObj[name] === "" ? `No ${name}` : targetObj[name];
+
+        return a;
+      };
+
+      const children = addressArr[findIndex(e.target)].children;
+
+      if (children.length > 1) {
+        children[1].remove();
+      } else {
+        const container = document.createElement("div");
+        container.className = "edit-container";
+
+        container.appendChild(createItem("name"));
+        container.appendChild(createItem("surname"));
+        container.appendChild(createItem("phone", "tel"));
+        container.appendChild(createItem("email", "mailto"));
+
+        addressArr[findIndex(e.target)].appendChild(container);
+      }
+      break;
   }
 
   switch (e.target.innerText) {
@@ -246,14 +276,14 @@ document.addEventListener("click", (e) => {
       }
 
       select(e.target);
-      document.querySelectorAll(".menu-drop-down").forEach((x) => x.remove());
+      dropDownMenues.forEach((x) => x.remove());
 
       break;
     case "Delete":
       addressBook.splice(findIndex(e.target), 1);
 
-      document.querySelectorAll(".address")[findIndex(e.target)].remove();
-      document.querySelectorAll(".menu-drop-down").forEach((x) => x.remove());
+      addressArr[findIndex(e.target)].remove();
+      dropDownMenues.forEach((x) => x.remove());
 
       localStorage.setItem("addressBook", JSON.stringify(addressBook));
       break;
@@ -292,17 +322,23 @@ document.addEventListener("click", (e) => {
         container.appendChild(createItem("email", "email", false));
         container.appendChild(createButton("Save"));
 
-        document.querySelectorAll(".address")[findIndex(target)].appendChild(container);
+        addressArr[findIndex(target)].appendChild(container);
       }
 
-      formEdit(e.target, targetObj);
+      const children = addressArr[findIndex(e.target)].children;
 
-      document.querySelectorAll(".menu-drop-down").forEach((x) => x.remove());
+      if (children.length > 1) {
+        children[1].remove();
+      } else {
+        formEdit(e.target, targetObj);
+      }
+
+      dropDownMenues.forEach((x) => x.remove());
       break;
   }
 
-  if (document.querySelectorAll(".menu-drop-down") && e.target.id !== "menu") {
-    document.querySelectorAll(".menu-drop-down").forEach((x) => x.remove());
+  if (dropDownMenues && e.target.id !== "menu") {
+    dropDownMenues.forEach((x) => x.remove());
   }
   selectedArrIndexes.length > 0 ? (document.querySelector("#Remove").style.display = "inline-block") : (document.querySelector("#Remove").style.display = "none");
 });
