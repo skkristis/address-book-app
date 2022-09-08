@@ -1,202 +1,308 @@
 let addressBook = [];
+let selectedArrIndexes = [];
 
-document.querySelector("#address-form").addEventListener("click", (e) => {
-  if (e.target.id === "clear") {
-    document.querySelector("#address-form").reset();
-  }
+function render(addressArray = addressBook) {
+  addressArray.sort((a, b) => a.name.localeCompare(b.name));
+  selectedArrIndexes = [];
 
-  document.querySelector("#address-form").addEventListener("submit", (e) => {
-    e.preventDefault();
+  function icons(bool, given) {
+    const container = document.createElement("div");
+    const paramArr = [
+      {
+        tag: "i",
+        id: `phone`,
+        className: "fa-solid fa-mobile-screen-button",
+      },
+      {
+        tag: "i",
+        id: `at`,
+        className: given ? "fa-solid fa-at" : "not-given fa-solid fa-at",
+      },
+      {
+        favorite: bool,
+        tag: "i",
+        id: `star`,
+        className: "fa-regular fa-star",
+        favClassName: "fa-solid fa-star",
+      },
+      {
+        tag: "i",
+        id: `menu`,
+        className: "fa-solid fa-ellipsis-vertical",
+      },
+    ];
 
-    // stucture object
-    const fakeObj = {
-      name: null,
-      phoneNumber: null,
-      address: null,
-      email: null,
-      fav: false,
-    };
+    container.className = "icons";
 
-    const formData = new FormData(e.target);
-    let address = Object.fromEntries(formData);
+    paramArr.forEach((x) => {
+      const tag = document.createElement(x.tag);
 
-    if (address.name && address["phoneNumber"]) {
-      address = Object.assign({}, fakeObj, address);
-      addressBook.push(address);
-      document.querySelector("#address-form").reset();
-
-      localStorage.setItem("addressBook", JSON.stringify(addressBook));
-      render(addressBook);
-    }
-  });
-});
-
-document.querySelector("#search-bar").addEventListener("keyup", (e) => {
-  const renderArr = addressBook.filter((x) => {
-    //loops through all info tabs until finds
-
-    for (let key in x) {
-      if (key !== "fav") {
-        if (x[key].includes(e.target.value)) {
-          return true;
-        }
-      } else if (key == "fav" && e.target.value == "favorites") {
-        // checks if fav has value
-        return x[key];
+      if (x.favorite) {
+        tag.className = x.favClassName;
+      } else {
+        tag.className = x.className;
       }
-    }
 
-    //default if wasn't found in ANY tab
-
-    return false;
-  });
-
-  render(renderArr);
-});
-document.querySelector(".search-options").addEventListener("click", (e) => {
-  if (e.target.id === "sortAZ") {
-    addressBook.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (e.target.id === "sortZA") {
-    addressBook.sort((a, b) => b.name.localeCompare(a.name));
-  }
-  render(addressBook);
-});
-
-document.querySelector("#output").addEventListener("click", (e) => {
-  function selectedHandlers(remove, edit) {
-    if (document.querySelector(".selectedHandlers")) {
-      document.querySelector(".selectedHandlers").remove();
-    }
-
-    const item = document.createElement("button");
-
-    if (remove) {
-      item.type = "button";
-      item.innerText = "Delete selected";
-      item.className = "selectedHandlers";
-
-      document.querySelector("#output").prepend(item);
-    } else if (edit) {
-      const item = document.createElement("button");
-
-      item.type = "button";
-      item.innerText = "Save edit";
-      item.className = "selectedHandlers";
-
-      document.querySelector("#output").prepend(item);
-    }
-  }
-
-  if (e.target.className === "delete") {
-    [customIdName, customIdPhone] = e.target.name.split(",");
-
-    const index = addressBook.findIndex((person) => person.name === customIdName && person.phoneNumber === customIdPhone);
-    addressBook.splice(index, 1);
-
-    render(addressBook);
-    localStorage.setItem("addressBook", JSON.stringify(addressBook));
-  } else if (e.target.className === "edit") {
-    [customIdName, customIdPhone] = e.target.name.split(",");
-
-    const index = addressBook.findIndex((person) => person.name === customIdName && person.phoneNumber === customIdPhone);
-    document.querySelectorAll("[type]").forEach((x) => (x.disabled = true));
-
-    render([addressBook[index]], true);
-    document.querySelectorAll("button").forEach((x) => (x.disabled = true));
-    selectedHandlers(false, true);
-
-    document.querySelector(".selectedHandlers").addEventListener("click", () => {
-      const newObj = {
-        name: document.querySelector(".address").children[0].value,
-        phoneNumber: document.querySelector(".address").children[1].value,
-        address: document.querySelector(".address").children[2].value,
-        email: document.querySelector(".address").children[3].value,
-        fav: addressBook[index].fav,
-      };
-
-      addressBook.splice(index, 1, newObj);
-      document.querySelector(".selectedHandlers").remove();
-      document.querySelectorAll("[type]").forEach((x) => (x.disabled = false));
-
-      render(addressBook);
-      localStorage.setItem("addressBook", JSON.stringify(addressBook));
+      tag.id = x.id;
+      container.appendChild(tag);
     });
-  } else if (e.target.tagName === "BUTTON" && e.target.name) {
-    [customIdName, customIdPhone] = e.target.name.split(",");
 
-    const index = addressBook.findIndex((person) => person.name === customIdName && person.phoneNumber === customIdPhone);
-
-    if (addressBook[index].fav === "on") {
-      addressBook[index].fav = false;
-      e.target.innerText = " ";
-    } else {
-      addressBook[index].fav = "on";
-      e.target.innerText = "☆";
-    }
-
-    localStorage.setItem("addressBook", JSON.stringify(addressBook));
+    return container;
   }
-});
 
-const render = (addressArray, edit) => {
+  localStorage.setItem("addressBook", JSON.stringify(addressBook));
   const output = document.querySelector("#output-container");
 
   if (document.querySelectorAll(".address")) {
     document.querySelector("#output-container").innerHTML = null;
   }
 
-  function createBlock(info, type = "div", customId = "") {
-    const container = document.createElement(type);
-    type === "input" ? (container.value = info) && (container.type = "text") : (container.innerText = info);
-    container.name = customId;
-    return container;
-  }
-
-  function handlers(customId) {
+  addressArray.forEach((obj, i) => {
     const container = document.createElement("div");
-    const remove = document.createElement("button");
-    const edit = document.createElement("button");
+    const innerContainer = document.createElement("div");
+    const name = document.createElement("p");
 
-    remove.type = "button";
-    edit.type = "button";
-    remove.className = "delete";
-    edit.className = "edit";
-    remove.innerText = "❌";
-    edit.innerText = "🖊️";
-    remove.name = customId;
-    edit.name = customId;
-
-    container.appendChild(edit);
-    container.appendChild(remove);
-
-    return container;
-  }
-
-  addressArray.forEach((obj) => {
-    const container = document.createElement("div");
-    const customId = `${obj.name},${obj.phoneNumber}`;
-
+    name.innerText = `${obj.name} ${obj.surname}`;
     container.className = "address";
+    innerContainer.className = "innerContainer";
 
-    for (let prop in obj) {
-      const info = obj[prop];
-
-      if (prop === "fav") {
-        container.appendChild(createBlock(obj[prop] ? "☆" : "", "button", customId));
-      } else {
-        container.appendChild(createBlock(info, edit ? "input" : "div"));
-      }
-
+    if (addressArray.length - 1 === i) {
+      innerContainer.appendChild(name);
+      innerContainer.appendChild(icons(obj.favorite, obj.email));
+      container.appendChild(innerContainer);
+      output.appendChild(container);
+    } else {
+      innerContainer.appendChild(name);
+      innerContainer.appendChild(icons(obj.favorite, obj.email));
+      container.appendChild(innerContainer);
       output.appendChild(container);
     }
-
-    container.appendChild(handlers(customId));
   });
-};
+}
 
 (function () {
   if (localStorage.addressBook) {
     addressBook = JSON.parse(localStorage.addressBook);
-    render(addressBook);
   }
+  render();
 })();
+
+document.addEventListener("click", (e) => {
+  function menuDropDown() {
+    const container = document.createElement("div");
+    const menuComp = ["Edit", "Select", "Delete"];
+    const arrowUp = document.createElement("div");
+
+    arrowUp.className = "arrow-up";
+    container.className = "menu-drop-down";
+
+    container.appendChild(arrowUp);
+
+    menuComp.forEach((x, i) => {
+      const btn = document.createElement("button");
+      btn.innerText = menuComp[i];
+      container.appendChild(btn);
+    });
+
+    return container;
+  }
+
+  function findIndex(target, index) {
+    const arr = Array.from(document.querySelectorAll(".address"));
+
+    if (target.className === "address") {
+      index = arr.indexOf(target);
+    } else {
+      while (target.className !== "address") {
+        target = target.parentNode;
+      }
+      index = arr.indexOf(target);
+    }
+
+    return index;
+  }
+
+  switch (e.target.id) {
+    case "Add":
+      document.querySelector("body").classList.toggle("darken");
+
+      function formPopUp() {
+        const createItem = (labelText, type, name, placeholder = "", required = "true") => {
+          const containerInput = document.createElement("div");
+          const input = document.createElement("input");
+          const label = document.createElement("h3");
+
+          containerInput.className = "inputContainer";
+          input.type = type;
+          input.name = name;
+          input.placeholder = placeholder;
+          input.required = required;
+          label.innerText = labelText;
+
+          containerInput.appendChild(label);
+          containerInput.appendChild(input);
+
+          return containerInput;
+        };
+
+        const createButton = (text) => {
+          const button = document.createElement("button");
+          button.type = "submit";
+          button.innerText = text;
+          button.id = "saveBtn";
+          return button;
+        };
+
+        const container = document.createElement("form");
+        container.className = "clicked-container";
+
+        container.appendChild(createItem("Name", "text", "name", "fields are required"));
+        container.appendChild(createItem("Surname", "text", "surname", "", false));
+        container.appendChild(createItem("Phone", "tel", "phone", "fields are required"));
+        container.appendChild(createItem("Email", "email", "email", "", false));
+        container.appendChild(createButton("Save"));
+
+        document.querySelector("#app").appendChild(container);
+      }
+
+      formPopUp();
+      break;
+    case "Remove":
+      selectedArrIndexes.sort((a, b) => b - a);
+      selectedArrIndexes.forEach((index) => addressBook.splice(index, 1));
+
+      render(addressBook);
+      break;
+    case "saveBtn":
+      e.preventDefault();
+
+      function saveData() {
+        const form = document.querySelector("form");
+        const formData = new FormData(form);
+        let address = Object.fromEntries(formData);
+
+        if (address.name && address.phone) {
+          address.favorite = false;
+          addressBook.push(address);
+
+          document.querySelector(".clicked-container").remove();
+          document.querySelector("body").classList.toggle("darken");
+        }
+
+        render();
+      }
+
+      saveData();
+      break;
+    case "selected":
+      const index = selectedArrIndexes.indexOf(findIndex(e.target));
+
+      e.target.remove();
+      selectedArrIndexes.splice(index, 1);
+      break;
+    case "star":
+      addressBook[findIndex(e.target)].favorite = !addressBook[findIndex(e.target)].favorite;
+      render();
+      break;
+    case "menu":
+      const arr = Array.from(document.querySelectorAll(".innerContainer"));
+      arr[findIndex(e.target)].appendChild(menuDropDown());
+      break;
+    case "saveEdit":
+      e.preventDefault();
+
+      const form = document.querySelector("form");
+      const formData = new FormData(form);
+      let address = Object.fromEntries(formData);
+
+      if (address.name && address.phone) {
+        address.favorite = false;
+        addressBook.splice(findIndex(e.target), 1, address);
+
+        document.querySelectorAll(".edit-container").forEach((x) => x.remove());
+        render();
+      }
+
+      break;
+  }
+
+  switch (e.target.className) {
+    case "darken":
+      document.querySelector(".clicked-container").remove();
+      document.querySelector("body").classList.toggle("darken");
+      break;
+  }
+
+  switch (e.target.innerText) {
+    case "Select":
+      function select(target) {
+        const selectedIcon = document.createElement("i");
+        selectedIcon.id = "selected";
+        selectedIcon.className = "fa-solid fa-circle-check";
+        if (!selectedArrIndexes.includes(findIndex(target))) {
+          selectedArrIndexes.push(findIndex(target));
+          document.querySelectorAll(".icons")[findIndex(target)].prepend(selectedIcon);
+        }
+      }
+
+      select(e.target);
+      document.querySelectorAll(".menu-drop-down").forEach((x) => x.remove());
+
+      break;
+    case "Delete":
+      addressBook.splice(findIndex(e.target), 1);
+
+      document.querySelectorAll(".address")[findIndex(e.target)].remove();
+      document.querySelectorAll(".menu-drop-down").forEach((x) => x.remove());
+
+      localStorage.setItem("addressBook", JSON.stringify(addressBook));
+      break;
+    case "Edit":
+      const targetObj = addressBook[findIndex(e.target)];
+
+      function formEdit(target, obj) {
+        const createItem = (type, name, required = "true") => {
+          const input = document.createElement("input");
+
+          input.type = type;
+          input.name = name;
+          input.placeholder = name;
+          input.value = obj[name];
+          input.required = required;
+
+          return input;
+        };
+
+        const createButton = (text) => {
+          const button = document.createElement("button");
+
+          button.type = "submit";
+          button.innerText = text;
+          button.id = "saveEdit";
+
+          return button;
+        };
+
+        const container = document.createElement("form");
+        container.className = "edit-container";
+
+        container.appendChild(createItem("text", "name"));
+        container.appendChild(createItem("text", "surname", false));
+        container.appendChild(createItem("tel", "phone"));
+        container.appendChild(createItem("email", "email", false));
+        container.appendChild(createButton("Save"));
+
+        document.querySelectorAll(".address")[findIndex(target)].appendChild(container);
+      }
+
+      formEdit(e.target, targetObj);
+
+      document.querySelectorAll(".menu-drop-down").forEach((x) => x.remove());
+      break;
+  }
+
+  if (document.querySelectorAll(".menu-drop-down") && e.target.id !== "menu") {
+    document.querySelectorAll(".menu-drop-down").forEach((x) => x.remove());
+  }
+  selectedArrIndexes.length > 0 ? (document.querySelector("#Remove").style.display = "inline-block") : (document.querySelector("#Remove").style.display = "none");
+});
