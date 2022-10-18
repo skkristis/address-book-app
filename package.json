@@ -1,0 +1,22 @@
+{
+  "name": "address-book-app",
+  "version": "1.0.0",
+  "description": "Address book app",
+  "main": "index.js",
+  "scripts": {
+    "dev": "live-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skkristis/address-book-app.git"
+  },
+  "author": "Kristoferis Solovjov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/skkristis/address-book-app/issues"
+  },
+  "homepage": "https://github.com/skkristis/address-book-app#readme",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

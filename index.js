@@ -129,7 +129,13 @@ document.addEventListener("click", (e) => {
       document.querySelector("body").classList.toggle("darken");
 
       function formPopUp() {
-        const createItem = (labelText, type, name, placeholder = "", required = "true") => {
+        const createItem = (
+          labelText,
+          type,
+          name,
+          placeholder = "",
+          required = "true"
+        ) => {
           const containerInput = document.createElement("div");
           const input = document.createElement("input");
           const label = document.createElement("h3");
@@ -158,9 +164,15 @@ document.addEventListener("click", (e) => {
         const container = document.createElement("form");
         container.className = "clicked-container";
 
-        container.appendChild(createItem("Name", "text", "name", "fields are required"));
-        container.appendChild(createItem("Surname", "text", "surname", "", false));
-        container.appendChild(createItem("Phone", "tel", "phone", "fields are required"));
+        container.appendChild(
+          createItem("Name", "text", "name", "fields are required")
+        );
+        container.appendChild(
+          createItem("Surname", "text", "surname", "", false)
+        );
+        container.appendChild(
+          createItem("Phone", "tel", "phone", "fields are required")
+        );
         container.appendChild(createItem("Email", "email", "email", "", false));
         container.appendChild(createButton("Save"));
 
@@ -203,7 +215,8 @@ document.addEventListener("click", (e) => {
       selectedArrIndexes.splice(index, 1);
       break;
     case "star":
-      addressBook[findIndex(e.target)].favorite = !addressBook[findIndex(e.target)].favorite;
+      addressBook[findIndex(e.target)].favorite =
+        !addressBook[findIndex(e.target)].favorite;
       render();
       break;
     case "menu":
@@ -239,7 +252,10 @@ document.addEventListener("click", (e) => {
       const createItem = (name, type) => {
         const a = document.createElement("a");
 
-        a.href = type !== undefined && targetObj[name] !== "" ? `${type}:  ${targetObj[name]}` : "#";
+        a.href =
+          type !== undefined && targetObj[name] !== ""
+            ? `${type}:  ${targetObj[name]}`
+            : "#";
         a.innerText = targetObj[name] === "" ? `No ${name}` : targetObj[name];
 
         return a;
@@ -271,7 +287,9 @@ document.addEventListener("click", (e) => {
         selectedIcon.className = "fa-solid fa-circle-check";
         if (!selectedArrIndexes.includes(findIndex(target))) {
           selectedArrIndexes.push(findIndex(target));
-          document.querySelectorAll(".icons")[findIndex(target)].prepend(selectedIcon);
+          document
+            .querySelectorAll(".icons")
+            [findIndex(target)].prepend(selectedIcon);
         }
       }
 
@@ -340,5 +358,7 @@ document.addEventListener("click", (e) => {
   if (dropDownMenues && e.target.id !== "menu") {
     dropDownMenues.forEach((x) => x.remove());
   }
-  selectedArrIndexes.length > 0 ? (document.querySelector("#Remove").style.display = "inline-block") : (document.querySelector("#Remove").style.display = "none");
+  selectedArrIndexes.length > 0
+    ? (document.querySelector("#Remove").style.display = "inline-block")
+    : (document.querySelector("#Remove").style.display = "none");
 });
